@@ -41,8 +41,6 @@ struct histo {
 int main(int argc, char* argv[])
 {
 
-
-  TDirectory *where = gDirectory;
   TString f_name = argv[1];
   TFile *f_input = TFile::Open(f_name);
   TTree *t_input = (TTree*) f_input->Get("HWWTree");
@@ -60,27 +58,46 @@ int main(int argc, char* argv[])
   histos[1] = new histo("nJets_OR_T_MV1_70",10,0,10);
   
   
-  TH1F *h[nhistos];
+  //  TH1F *h[nhistos];
+  vector<vector<TH1F*> > h;
+  //cuts,vars
   
   cout<<"created histo structs"<<endl;
-  
-  TCut cut = "(EF_mu24i_tight || EF_mu36_tight || EF_e24vhi_medium1 || EF_e60_medium1) && ((onelep_type>0) && total_leptons==1) && (nTaus_OR_Pt25==2) && passEventCleaning";
-  TString cut_name = "1l2t";
-  
-  for(int i=0;i<nhistos;++i) {
-    //where->cd();
-    cout<<"loop: "<<i<<endl;
-    TString h_name = cut_name+histos[i]->var_name;
-    cout<<"histo name "<<h_name<<endl;
-    h[i] = new TH1F(h_name,histos[i]->var_name,histos[i]->nbins,histos[i]->xmin,histos[i]->xmax);
-    cout<<"TH1F created "<<h[i]->GetEntries()<<endl;
-    cout<<t_input->Project(h_name,histos[i]->var_name,cut)<<endl;
-    cout<<"TH1F entries "<<h[i]->GetEntries()<<endl;
-    //f_output->cd();
-    h[i]->Write();
-    //    delete h;
-  }
 
+  vector<TCut> cuts;
+  cuts.push_back("(EF_mu24i_tight || EF_mu36_tight || EF_e24vhi_medium1 || EF_e60_medium1)");
+  cuts.push_back("onelep_type>0");
+  cuts.push_back("total_leptons==1");
+  cuts.push_back("nTaus_OR_Pt25==2");
+  cuts.push_back("passEventCleaning");
+  vector<TString> cut_names;
+  cut_names.push_back("trig");
+  cut_names.push_back("onelep_type");
+  cut_names.push_back("NLep");
+  cut_names.push_back("NTau");
+  cut_names.push_back("clean");
+  TString prefix="1l2t";
+
+  TCut current_cut = "";
+  for(int c=0;c<cuts.size();++c) {
+    current_cut+=cuts.at(c);
+    vector<TH1F*> VecOfHistosOfVars;
+    for(int i=0;i<nhistos;++i) {
+      cout<<"loop: "<<i<<endl;
+      TString h_name = prefix+"_"+cut_names.at(c)+"_"+histos[i]->var_name;
+      cout<<"histo name "<<h_name<<endl;
+      TH1F* h_temp = new TH1F(h_name,histos[i]->var_name,histos[i]->nbins,histos[i]->xmin,histos[i]->xmax);
+      cout<<"TH1F created "<<h_temp->GetEntries()<<endl;
+      cout<<t_input->Project(h_name,histos[i]->var_name,current_cut)<<endl;
+      VecOfHistosOfVars.push_back(h_temp);
+      cout<<"TH1F entries "<<h_temp->GetEntries()<<endl;
+      h_temp->Write();
+      //delete h;
+    }//end histo loop
+    h.push_back(VecOfHistosOfVars);
+    VecOfHistosOfVars.clear();
+  }//end cut loop
+  
   cout<<"file write NAO"<<endl;
   //  f_output->Write();
   cout<<"file written "<<endl;
