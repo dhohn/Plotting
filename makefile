@@ -11,3 +11,6 @@ makePlots: plotVar.C makePlots.C
 
 makePlotsMVA: plotVarMVA.C makePlotsMVA.C
 	g++ -g -o $@ $@.C -I`root-config --incdir` `root-config --glibs` -I/user/dhohn/bin
+
+makeHistos: makeHistos.C
+	g++ -g -o $@ $@.C -I`root-config --incdir` `root-config --glibs` -I${HOME}/Plotting
