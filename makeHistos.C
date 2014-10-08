@@ -41,21 +41,27 @@ struct histo {
 int main(int argc, char* argv[])
 {
 
+  const Float_t GeV = 1000;
+  
   TString f_name = argv[1];
   TFile *f_input = TFile::Open(f_name);
   TTree *t_input = (TTree*) f_input->Get("HWWTree");
   cout<<"opened file "<<f_name<<endl;
   
   TString f_id = f_name.Remove(f_name.Length()-5,f_name.Length());
+  if(f_id.Contains("/")) f_id = f_id.Remove(0,f_id.Length()-6);
 
   TFile *f_output = new TFile("./"+f_id+"_hist.root","RECREATE");
 
-  cout<<"create outfile"<<endl;
+  cout<<"create outfile"<<f_id<<endl;
   
-  int nhistos = 2;
+  int nhistos = 5;
   histo *histos[nhistos];
   histos[0] = new histo("nJets_OR_T",10,0,10);
   histos[1] = new histo("nJets_OR_T_MV1_70",10,0,10);
+  histos[2] = new histo("lep_Pt_0",100,0,500*GeV);
+  histos[3] = new histo("total_leptons",5,0,5);
+  histos[4] = new histo("nTaus_OR_Pt25",5,0,5);
   
   
   //  TH1F *h[nhistos];
@@ -66,15 +72,17 @@ int main(int argc, char* argv[])
 
   vector<TCut> cuts;
   cuts.push_back("(EF_mu24i_tight || EF_mu36_tight || EF_e24vhi_medium1 || EF_e60_medium1)");
-  cuts.push_back("onelep_type>0");
+  //  cuts.push_back("onelep_type>0");
   cuts.push_back("total_leptons==1");
   cuts.push_back("nTaus_OR_Pt25==2");
+  //cuts.push_back("lep_Pt_0>10e3");
   cuts.push_back("passEventCleaning");
   vector<TString> cut_names;
   cut_names.push_back("trig");
-  cut_names.push_back("onelep_type");
+  //cut_names.push_back("onelep_type");
   cut_names.push_back("NLep");
   cut_names.push_back("NTau");
+  //cut_names.push_back("lepPt0");  
   cut_names.push_back("clean");
   TString prefix="1l2t";
 
