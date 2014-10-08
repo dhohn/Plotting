@@ -14,3 +14,6 @@ makePlotsMVA: plotVarMVA.C makePlotsMVA.C
 
 makeHistos: makeHistos.C
 	g++ -g -o $@ $@.C -I`root-config --incdir` `root-config --glibs` -I${HOME}/Plotting
+
+comparePlots: comparePlots.C plotHistos.C
+	g++ -g -o $@ $@.C -I`root-config --incdir` `root-config --glibs` -I${HOME}/Plotting

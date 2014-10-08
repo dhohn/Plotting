@@ -23,13 +23,13 @@ void plotHistos(int nhyp, TH1F** histos, TString legends[], TString options=""){
   
   setHSG3Style();
 
-  bool doKStest  = options.Contains("KS");
-  bool normalise = options.Contains("Norm");
+  bool fDoKStest  = options.Contains("KS");
+  bool fNormalise = options.Contains("Norm");
 
   ofstream yieldfile;
   yieldfile.open("./plots/nevents");
 
-  TString variable = histos[0].GetTitle();
+  TString variable = histos[0]->GetTitle();
 
   TString xtitle = histos[0]->GetXaxis()->GetTitle();
   TString ytitle = histos[0]->GetYaxis()->GetTitle();
@@ -52,13 +52,13 @@ void plotHistos(int nhyp, TH1F** histos, TString legends[], TString options=""){
 
 
   for(int h=0;h<nhyp;h++) {
-    if(normalise) normalise(histos[h]);
+    if(fNormalise) normalise(histos[h]);
     setHistoHSG3Style(histos[h]);
     //colours are 0white, 1black, 2red, 3green, 4blue, 5yellow, ...
     histos[h]->SetLineColor(h+1);
     legend->AddEntry(histos[h],legends[h]);
     hs->Add(histos[h]);
-
+    yieldfile<<legends[h]<<" "<<histos[h]->GetEntries()<<endl;
   }
  
 
@@ -129,7 +129,7 @@ void plotHistos(int nhyp, TH1F** histos, TString legends[], TString options=""){
   legend->Draw();
 
   //KS test
-  if(nhyp==2 && doKStest) {
+  if(nhyp==2 && fDoKStest) {
     Double_t KS_value = histos[0]->KolmogorovTest(histos[1],"O");
     //if(isnan(KS_value)) KS_value = -999;
     TLatex *KS = new TLatex();
@@ -144,7 +144,8 @@ void plotHistos(int nhyp, TH1F** histos, TString legends[], TString options=""){
 
   if(debug) {
     cout<<"Saving png"<<endl;
-    hs->GetHists()->Print();
+    //only works in CINT
+    //hs->GetHists()->Print();
   }
   
   c1->Print("./plots/"+variable+".png");
